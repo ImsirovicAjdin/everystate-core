@@ -47,11 +47,11 @@ EveryState is a reactive state management library where:
 
 ## Core Features
 
-- **Path-based subscriptions** — Subscribe to exactly what you need
-- **Wildcard support** — `user.*` catches all user changes
-- **Atomic batching** — Multiple writes, single notification per path
-- **Zero dependencies** — ~2KB minified
-- **Framework-agnostic** — Works with React, Vue, Angular, Svelte, or vanilla JS
+- **Path-based subscriptions**: Subscribe to exactly what you need
+- **Wildcard support**: `user.*` catches all user changes
+- **Atomic batching**: Multiple writes, single notification per path
+- **Zero dependencies**: ~2KB minified
+- **Framework-agnostic**: Works with React, Vue, Angular, Svelte, or vanilla JS
 
 ## Why EveryState?
 
@@ -64,14 +64,14 @@ EveryState makes state **addressable, observable, and testable** without special
 
 ## Ecosystem
 
-- `@everystate/core` — Core state engine (you are here)
-- `@everystate/view` — DOM-as-state with surgical updates
-- `@everystate/perf` — Performance monitoring overlay
-- `@everystate/css` — Reactive styling and design tokens
-- `@everystate/router` — SPA routing as state
-- `@everystate/react` — React hooks adapter
-- `@everystate/renderer` — Direct-binding reactive renderer
-- `@everystate/event-test` — Zero-dependency testing
+- `@everystate/core`: Core state engine (you are here)
+- `@everystate/view`: DOM-as-state with surgical updates
+- `@everystate/perf`: Performance monitoring overlay
+- `@everystate/css`: Reactive styling and design tokens
+- `@everystate/router`: SPA routing as state
+- `@everystate/react`: React hooks adapter
+- `@everystate/renderer`: Direct-binding reactive renderer
+- `@everystate/event-test`: Zero-dependency testing
 
 ## Documentation
 
