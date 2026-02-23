@@ -1,0 +1,38 @@
+{
+  "name": "@everystate/core",
+  "version": "1.0.0",
+  "description": "EveryState: Lightweight event-driven state management with path-based subscriptions, wildcards, and async support",
+  "type": "module",
+  "main": "index.js",
+  "keywords": [
+    "everystate",
+    "state-management",
+    "event-driven",
+    "reactive",
+    "zero-dependency",
+    "micro-framework",
+    "async-state",
+    "query-client",
+    "domless-testing",
+    "path-based",
+    "dot-path",
+    "observable"
+  ],
+  "author": {
+    "name": "Ajdin Imsirovic",
+    "url": "https://www.linkedin.com/in/ajdin-imsirovic"
+  },
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/ImsirovicAjdin/everystate-core"
+  },
+  "homepage": "https://github.com/ImsirovicAjdin/everystate-core#readme",
+  "files": [
+    "index.js",
+    "README.md"
+  ],
+  "dependencies": {
+    "@uistate/core": "^5.6.0"
+  }
+}
