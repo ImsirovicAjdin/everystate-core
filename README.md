@@ -13,9 +13,9 @@ npm install @everystate/core
 ## Quick Start
 
 ```js
-import { createEventState } from '@everystate/core';
+import { createEveryState } from '@everystate/core';
 
-const store = createEventState({ count: 0, user: { name: 'Alice' } });
+const store = createEveryState({ count: 0, user: { name: 'Alice' } });
 
 // Subscribe to specific path
 const unsub = store.subscribe('count', (value) => {
@@ -65,13 +65,12 @@ EveryState makes state **addressable, observable, and testable** without special
 ## Ecosystem
 
 - `@everystate/core`: Core state engine (you are here)
-- `@everystate/view`: DOM-as-state with surgical updates
-- `@everystate/perf`: Performance monitoring overlay
 - `@everystate/css`: Reactive styling and design tokens
-- `@everystate/router`: SPA routing as state
+- `@everystate/perf`: Performance monitoring overlay
 - `@everystate/react`: React hooks adapter
-- `@everystate/renderer`: Direct-binding reactive renderer
-- `@everystate/event-test`: Zero-dependency testing
+- `@everystate/router`: SPA routing as state
+- `@everystate/test`: Zero-dependency testing
+- `@everystate/view`: DOM-as-state with surgical updates
 
 ## Documentation
 
