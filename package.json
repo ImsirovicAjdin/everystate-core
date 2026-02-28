@@ -1,6 +1,6 @@
 {
   "name": "@everystate/core",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "EveryState: Lightweight event-driven state management with path-based subscriptions, wildcards, and async support",
   "type": "module",
   "main": "index.js",
