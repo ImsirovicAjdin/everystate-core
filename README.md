@@ -37,6 +37,59 @@ store.subscribe('user.*', ({ path, value }) => {
 unsub();
 ```
 
+## Self-test (CLI, opt-in)
+
+Run the bundled **zero-dependency** self-test locally to verify core behavior.
+It is **opt-in** and never runs automatically on install:
+
+```bash
+# via npx (no install needed)
+npx everystate-self-test
+
+# if installed locally
+everystate-self-test
+
+# or directly
+node node_modules/@everystate/core/self-test.js
+```
+
+You can also run the npm script from the package folder:
+
+```bash
+npm --prefix node_modules/@everystate/core run self-test
+```
+
+### Integration tests (@everystate/test)
+
+The `tests/` folder contains a separate integration suite that uses
+`@everystate/test` (not zero-dep). This is an intentional tradeoff:
+the **self-test** stays lightweight, while integration tests remain available
+for deeper validation.
+
+Run the integration suite (opt-in):
+
+```bash
+npm install @everystate/test
+node node_modules/@everystate/core/tests/core.test.js
+```
+
+Short form (from the package folder):
+
+```bash
+cd node_modules/@everystate/core
+npm run test:integration
+# or short alias
+npm run test:i
+```
+
+Or, from your project root:
+
+```bash
+npm --prefix node_modules/@everystate/core run test:integration
+# or short alias
+npm --prefix node_modules/@everystate/core run test:i
+```
+
 ## What is EveryState?
 
 EveryState is a reactive state management library where:
@@ -63,15 +116,6 @@ State management shouldn't be a black box. You should be able to:
 EveryState makes state **addressable, observable, and testable** without special tooling.
 
 ## Ecosystem
-
-- `@everystate/core`: Core state engine (you are here)
-- `@everystate/css`: Reactive styling and design tokens
-- `@everystate/perf`: Performance monitoring overlay
-- `@everystate/react`: React hooks adapter
-- `@everystate/router`: SPA routing as state
-- `@everystate/test`: Zero-dependency testing
-- `@everystate/view`: DOM-as-state with surgical updates
-
 
 | Package | Description | License |
 |---|---|---|

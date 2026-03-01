@@ -1,17 +1,17 @@
 /**
- * @everystate/core — eventTest-based integration tests
+ * @everystate/core - eventTest-based integration tests
  *
  * Merged from test-batch.js and test-batch-dogfood.js.
  * Tests batch, setMany, setAsync, destroy, and core regression tests
  * using @everystate/event-test.
  */
 
-import { createEventTest, runTests } from '@everystate/event-test';
+import { createEventTest, runTests } from '@everystate/test';
 import { createEveryState } from '@everystate/core';
 
 const results = runTests({
 
-  // ── batch ─────────────────────────────────────────────────────────
+  // -- batch ---------------------------------------------------------
 
   'batch: coalesces — same-path deduplication': () => {
     const t = createEventTest({ count: 0 });
@@ -80,7 +80,7 @@ const results = runTests({
     store.destroy();
   },
 
-  // ── setMany ───────────────────────────────────────────────────────
+  // -- setMany -------------------------------------------------------
 
   'setMany: plain object': () => {
     const t = createEventTest({});
@@ -116,7 +116,7 @@ const results = runTests({
     t.assertPath('x.z', 'world');
   },
 
-  // ── setAsync ──────────────────────────────────────────────────────
+  // -- setAsync ------------------------------------------------------
 
   'setAsync: batches loading phase writes': () => {
     const store = createEveryState({});
@@ -176,7 +176,7 @@ const results = runTests({
     store.destroy();
   },
 
-  // ── destroy ───────────────────────────────────────────────────────
+  // -- destroy -------------------------------------------------------
 
   'destroy: batch throws after destroy': () => {
     const store = createEveryState({ z: 0 });
@@ -194,7 +194,7 @@ const results = runTests({
     if (!threw) throw new Error('setMany() should throw after destroy');
   },
 
-  // ── core regression ───────────────────────────────────────────────
+  // -- core regression -----------------------------------------------
 
   'core: basic get/set/subscribe': () => {
     const t = createEventTest({ name: 'Alice' });

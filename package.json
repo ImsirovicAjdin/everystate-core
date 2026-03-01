@@ -1,12 +1,18 @@
 {
   "name": "@everystate/core",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "EveryState: Lightweight event-driven state management with path-based subscriptions, wildcards, and async support",
   "type": "module",
   "main": "index.js",
   "types": "index.d.ts",
+  "bin": {
+    "everystate-self-test": "cli.js"
+  },
   "scripts": {
-    "test": "node self-test.js"
+    "test": "node self-test.js",
+    "self-test": "node self-test.js",
+    "test:integration": "node tests/core.test.js",
+    "test:i": "node tests/core.test.js"
   },
   "keywords": [
     "everystate",
@@ -37,6 +43,7 @@
     "*.d.ts",
     "*.md",
     "*.html",
+    "cli.js",
     "tests/"
   ]
 }
