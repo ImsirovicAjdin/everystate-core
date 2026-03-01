@@ -1,6 +1,6 @@
 {
   "name": "@everystate/core",
-  "version": "1.0.2",
+  "version": "1.0.3",
   "description": "EveryState: Lightweight event-driven state management with path-based subscriptions, wildcards, and async support",
   "type": "module",
   "main": "index.js",
@@ -33,9 +33,10 @@
   },
   "homepage": "https://github.com/ImsirovicAjdin/everystate-core#readme",
   "files": [
-    "index.js",
-    "everyState.js",
-    "queryClient.js",
-    "README.md"
+    "*.js",
+    "*.d.ts",
+    "*.md",
+    "*.html",
+    "tests/"
   ]
 }
