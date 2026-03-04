@@ -1,4 +1,4 @@
-# @everystate/core
+# @everystate/core v1.0.5
 
 **EveryState: Observable state management with dot-path addressing**
 
@@ -9,6 +9,8 @@ Every piece of state has a name. Every name is subscribable. Every operation is 
 ```bash
 npm install @everystate/core
 ```
+
+> **Zero external dependencies** - Pure state management with no third-party packages required.
 
 ## Quick Start
 
@@ -62,20 +64,17 @@ npm --prefix node_modules/@everystate/core run self-test
 ### Integration tests (@everystate/test)
 
 The `tests/` folder contains a separate integration suite that uses
-`@everystate/test` (not zero-dep). This is an intentional tradeoff:
-the **self-test** stays lightweight, while integration tests remain available
-for deeper validation.
+`@everystate/test` (declared as `devDependency`). This is an intentional
+tradeoff: the **self-test** stays lightweight, while integration tests
+remain available for deeper validation.
 
-Run the integration suite (opt-in):
+**For end users** (after installing the package):
 
 ```bash
+# Install test dependency
 npm install @everystate/test
-node node_modules/@everystate/core/tests/core.test.js
-```
 
-Short form (from the package folder):
-
-```bash
+# Run from package folder
 cd node_modules/@everystate/core
 npm run test:integration
 # or short alias
@@ -88,6 +87,16 @@ Or, from your project root:
 npm --prefix node_modules/@everystate/core run test:integration
 # or short alias
 npm --prefix node_modules/@everystate/core run test:i
+```
+
+**For package developers** (working in the source repo):
+
+```bash
+# Install dev dependencies first
+npm install
+
+# Run integration tests
+npm run test:integration
 ```
 
 ## What is EveryState?
