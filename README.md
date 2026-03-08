@@ -1,4 +1,4 @@
-# @everystate/core v1.0.5
+# @everystate/core v1.0.6
 
 **EveryState: Observable state management with dot-path addressing**
 
@@ -34,6 +34,14 @@ const count = store.get('count');
 store.subscribe('user.*', ({ path, value }) => {
   console.log(`User field ${path} changed to:`, value);
 });
+
+// Check if a path exists (handles intentional undefined)
+store.has('count');        // true
+store.has('nonexistent');  // false
+
+// List all leaf paths under a prefix
+store.keys('user');        // ['user.name']
+store.keys();              // ['count', 'user.name']
 
 // Cleanup
 unsub();
@@ -112,6 +120,7 @@ EveryState is a reactive state management library where:
 - **Path-based subscriptions**: Subscribe to exactly what you need
 - **Wildcard support**: `user.*` catches all user changes
 - **Atomic batching**: Multiple writes, single notification per path
+- **Path introspection**: `has()` and `keys()` for runtime path discovery
 - **Zero dependencies**: ~2KB minified
 - **Framework-agnostic**: Works with React, Vue, Angular, Svelte, or vanilla JS
 

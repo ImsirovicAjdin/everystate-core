@@ -284,9 +284,72 @@ assert('wildcard-only: detail.oldValue correct', s12detail?.oldValue === 'Alice'
 
 s12.destroy();
 
+console.log('\n13. has()');
+const s13 = createEveryState({ count: 0, user: { name: 'Alice' }, empty: undefined });
+
+assert('has: existing primitive', s13.has('count') === true);
+assert('has: existing nested', s13.has('user.name') === true);
+assert('has: existing parent', s13.has('user') === true);
+assert('has: missing path', s13.has('nonexistent') === false);
+assert('has: deep missing', s13.has('user.email') === false);
+assert('has: deep missing parent', s13.has('a.b.c') === false);
+assert('has: no path returns true', s13.has('') === true);
+
+// set undefined intentionally, then check
+s13.set('maybe', undefined);
+assert('has: intentionally undefined', s13.has('maybe') === true);
+
+// destroyed store
+s13.destroy();
+let threwHas = false;
+try { s13.has('count'); } catch { threwHas = true; }
+assert('has: destroyed throws', threwHas);
+
+console.log('\n14. keys()');
+const s14 = createEveryState({ count: 0, user: { name: 'Alice', age: 30 }, flag: true });
+
+// All keys
+const allKeys = s14.keys();
+assert('keys: returns array', Array.isArray(allKeys));
+assert('keys: has count', allKeys.includes('count'));
+assert('keys: has user.name', allKeys.includes('user.name'));
+assert('keys: has user.age', allKeys.includes('user.age'));
+assert('keys: has flag', allKeys.includes('flag'));
+assert('keys: no parent objects', !allKeys.includes('user'));
+assert('keys: correct count', allKeys.length === 4);
+
+// Prefix
+const userKeys = s14.keys('user');
+assert('keys(prefix): returns children', userKeys.length === 2);
+assert('keys(prefix): has user.name', userKeys.includes('user.name'));
+assert('keys(prefix): has user.age', userKeys.includes('user.age'));
+
+// Missing prefix
+const missing = s14.keys('nonexistent');
+assert('keys(missing): empty array', missing.length === 0);
+
+// Deep prefix
+s14.set('a.b.c', 1);
+s14.set('a.b.d', 2);
+s14.set('a.e', 3);
+const aKeys = s14.keys('a');
+assert('keys(deep prefix): a has 3 leaves', aKeys.length === 3);
+assert('keys(deep prefix): a.b.c', aKeys.includes('a.b.c'));
+assert('keys(deep prefix): a.b.d', aKeys.includes('a.b.d'));
+assert('keys(deep prefix): a.e', aKeys.includes('a.e'));
+
+const abKeys = s14.keys('a.b');
+assert('keys(deep prefix): a.b has 2 leaves', abKeys.length === 2);
+
+// Destroyed store
+s14.destroy();
+let threwKeys = false;
+try { s14.keys(); } catch { threwKeys = true; }
+assert('keys: destroyed throws', threwKeys);
+
 // Results
 
-console.log(`\n@everystate/core v1.0.0 self-test`);
+console.log(`\n@everystate/core v1.0.6 self-test`);
 console.log(`✓ ${passed} assertions passed${failed ? `, ✗ ${failed} failed` : ''}\n`);
 
 if (failed > 0) process.exit(1);

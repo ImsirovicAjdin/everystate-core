@@ -23,6 +23,18 @@ export interface EveryStateStore {
   get(path?: string): any;
 
   /**
+   * Check if a path exists in the store.
+   * Unlike `get(path) !== undefined`, correctly handles intentionally-stored undefined.
+   */
+  has(path: string): boolean;
+
+  /**
+   * List all leaf paths under a prefix.
+   * If no prefix is provided, lists all paths in the entire store.
+   */
+  keys(prefix?: string): string[];
+
+  /**
    * Set value at a dot-separated path and notify subscribers.
    * @returns The value that was set
    */

@@ -143,6 +143,57 @@ export function createEveryState(initial = {}) {
     },
 
     /**
+     * Check if a path exists in the store.
+     * Unlike get(path) !== undefined, this correctly handles
+     * paths whose value is intentionally set to undefined.
+     * @param {string} path - Dot-separated path
+     * @returns {boolean} true if the path exists
+     */
+    has(path) {
+      if (destroyed) throw new Error('Cannot check destroyed store');
+      if (!path) return true;
+      const parts = path.split('.');
+      let cur = state;
+      for (const p of parts) {
+        if (cur == null || typeof cur !== 'object' || !(p in cur)) return false;
+        cur = cur[p];
+      }
+      return true;
+    },
+
+    /**
+     * List all leaf paths under a prefix.
+     * @param {string} [prefix] - Dot-separated prefix (e.g., 'css').
+     *   If omitted, lists all paths in the entire store.
+     * @returns {string[]} Array of dot-separated leaf paths
+     */
+    keys(prefix) {
+      if (destroyed) throw new Error('Cannot list keys of destroyed store');
+      let root = state;
+      let base = '';
+      if (prefix) {
+        base = prefix;
+        const parts = prefix.split('.');
+        for (const p of parts) {
+          if (root == null || typeof root !== 'object' || !(p in root)) return [];
+          root = root[p];
+        }
+      }
+      const result = [];
+      function walk(obj, path) {
+        if (obj == null || typeof obj !== 'object') {
+          result.push(path);
+          return;
+        }
+        for (const k of Object.keys(obj)) {
+          walk(obj[k], path ? `${path}.${k}` : k);
+        }
+      }
+      walk(root, base);
+      return result;
+    },
+
+    /**
      * Set value at path and notify subscribers
      * @param {string} path - Dot-separated path (e.g., 'user.profile.name')
      * @param {*} value - New value
