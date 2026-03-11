@@ -13,7 +13,7 @@ const results = runTests({
 
   // -- batch ---------------------------------------------------------
 
-  'batch: coalesces — same-path deduplication': () => {
+  'batch: coalesces - same-path deduplication': () => {
     const t = createEventTest({ count: 0 });
     t.store.batch(() => {
       t.trigger('count', 1);
@@ -51,7 +51,7 @@ const results = runTests({
     store.destroy();
   },
 
-  'batch: nested — only outermost flushes': () => {
+  'batch: nested - only outermost flushes': () => {
     const t = createEventTest({ a: 0, b: 0 });
     t.store.batch(() => {
       t.trigger('a', 1);

@@ -1,5 +1,5 @@
 /**
- * EveryState v1.0.0 - Optimized Path-Based State Management
+ * EveryState v1.0.8 - Optimized Path-Based State Management
  *
  * A lightweight, performant state management library using path-based subscriptions.
  * Optimized for selective notifications and granular updates.
@@ -9,7 +9,7 @@
  * - Selective subscriptions (only relevant subscribers fire)
  * - Wildcard subscriptions (e.g., 'user.*' catches all user changes)
  * - Global subscriptions (e.g., '*' catches all changes)
- * - Atomic batching (batch/setMany — subscribers fire after all writes)
+ * - Atomic batching (batch/setMany - subscribers fire after all writes)
  * - Zero dependencies
  * - ~2KB minified
  *
@@ -85,7 +85,7 @@ export function createEveryState(initial = {}) {
     if (destroyed || listeners.size === 0) return value;
 
     // Lazy detail allocation: only build the object when a listener is
-    // actually present.  No closure is created — the inline `||` re-uses
+    // actually present.  No closure is created - the inline `||` re-uses
     // the same object across exact / wildcard / global dispatch.
     let detail = null;
 

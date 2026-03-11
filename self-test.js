@@ -251,13 +251,13 @@ console.log('\n11. fast-path: no detail allocated without listeners');
 const s11 = createEveryState({ a: 0 });
 let s11fires = 0;
 
-// set with zero subscribers — fast-path should skip all dispatch
+// set with zero subscribers - fast-path should skip all dispatch
 s11.set('a', 1);
 s11.set('a', 2);
 s11.set('a', 3);
 assert('fast-path: value written without subscribers', s11.get('a') === 3);
 
-// subscribe, fire, unsub, then set again — fast-path should re-engage
+// subscribe, fire, unsub, then set again - fast-path should re-engage
 const unsub11 = s11.subscribe('a', () => { s11fires++; });
 s11.set('a', 4);
 assert('fast-path: fires with subscriber', s11fires === 1);

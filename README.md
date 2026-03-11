@@ -1,4 +1,4 @@
-# @everystate/core v1.0.7
+# @everystate/core v1.0.8
 
 **EveryState: Observable state management with dot-path addressing**
 
@@ -122,7 +122,7 @@ EveryState is a reactive state management library where:
 - **Atomic batching**: Multiple writes, single notification per path
 - **Path introspection**: `has()` and `keys()` for runtime path discovery
 - **Zero dependencies**: ~2KB minified
-- **Framework-agnostic**: Works with React, Vue, Angular, Svelte, or vanilla JS
+- **Framework-agnostic**: Works with React, Vue, Angular, Solid, Svelte, or vanilla JS
 
 ## Why EveryState?
 
@@ -138,6 +138,7 @@ EveryState makes state **addressable, observable, and testable** without special
 | Package | Description | License |
 |---|---|---|
 | [@everystate/aliases](https://www.npmjs.com/package/@everystate/aliases) | Ergonomic single-character and short-name DOM aliases for vanilla JS | MIT |
+| [@everystate/angular](https://www.npmjs.com/package/@everystate/angular) | Angular adapter: `usePath`, `useIntent`, `useWildcard`, `useAsync` - bridges store to Angular signals | MIT |
 | [@everystate/core](https://www.npmjs.com/package/@everystate/core) | Path-based state management with wildcard subscriptions and async support. Core state engine (you are here). | MIT |
 | [@everystate/css](https://www.npmjs.com/package/@everystate/css) | Reactive CSSOM engine: design tokens, typed validation, WCAG enforcement, all via path-based state | MIT |
 | [@everystate/examples](https://www.npmjs.com/package/@everystate/examples) | Example applications and patterns | MIT |
@@ -145,14 +146,17 @@ EveryState makes state **addressable, observable, and testable** without special
 | [@everystate/react](https://www.npmjs.com/package/@everystate/react) | React hooks adapter: `usePath`, `useIntent`, `useAsync` hooks and `EventStateProvider` | MIT |
 | [@everystate/renderer](https://www.npmjs.com/package/@everystate/renderer) | Direct-binding reactive renderer: `bind-*`, `set`, `each` attributes. Zero build step | MIT |
 | [@everystate/router](https://www.npmjs.com/package/@everystate/router) | SPA routing as state | MIT |
+| [@everystate/solid](https://www.npmjs.com/package/@everystate/solid) | Solid adapter: `usePath`, `useIntent`, `useWildcard`, `useAsync` - bridges store to Solid signals | MIT |
 | [@everystate/test](https://www.npmjs.com/package/@everystate/test) | Event-sequence testing for UIstate stores. Zero dependency. | MIT |
+| [@everystate/types](https://www.npmjs.com/package/@everystate/types) | Typed dot-path autocomplete for EveryState stores (you are here) | MIT |
 | [@everystate/view](https://www.npmjs.com/package/@everystate/view) | State-driven view: DOMless resolve + surgical DOM projector. View tree as first-class state | MIT |
 | [@everystate/vue](https://www.npmjs.com/package/@everystate/vue) | Vue 3 composables adapter: `provideStore`, `usePath`, `useIntent`, `useWildcard`, `useAsync` | MIT |
-| [@everystate/types](https://www.npmjs.com/package/@everystate/types) | Typed dot-path autocomplete for EveryState stores (you are here) | MIT |
 
 ## Documentation
 
-Full documentation: [https://github.com/ImsirovicAjdin/everystate-core](https://github.com/ImsirovicAjdin/everystate-core)
+Full documentation available at [everystate.dev](https://everystate.dev).
+
+Source code: [https://github.com/ImsirovicAjdin/everystate-core](https://github.com/ImsirovicAjdin/everystate-core)
 
 ## License
 
