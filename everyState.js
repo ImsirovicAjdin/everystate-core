@@ -1,5 +1,5 @@
 /**
- * EveryState v1.0.8 - Optimized Path-Based State Management
+ * EveryState v1.0.9 - Optimized Path-Based State Management
  *
  * A lightweight, performant state management library using path-based subscriptions.
  * Optimized for selective notifications and granular updates.

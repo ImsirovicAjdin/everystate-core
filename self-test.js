@@ -349,7 +349,7 @@ assert('keys: destroyed throws', threwKeys);
 
 // Results
 
-console.log(`\n@everystate/core v1.0.6 self-test`);
+console.log(`\n@everystate/core v1.0.9 self-test`);
 console.log(`✓ ${passed} assertions passed${failed ? `, ✗ ${failed} failed` : ''}\n`);
 
 if (failed > 0) process.exit(1);
