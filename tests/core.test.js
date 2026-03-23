@@ -232,6 +232,158 @@ const results = runTests({
     const types = t.getTypeAssertions();
     if (types.length !== 3) throw new Error(`Expected 3 type assertions, got ${types.length}`);
   },
+
+  // -- derived -------------------------------------------------------
+
+  'derived: basic computation and recomputation': () => {
+    const store = createEveryState({ todos: ['a', 'b', 'c'] });
+    store.derived('count', ['todos'], () => store.get('todos').length);
+
+    if (store.get('count') !== 3) throw new Error(`Expected 3, got ${store.get('count')}`);
+
+    store.set('todos', ['a', 'b', 'c', 'd']);
+    if (store.get('count') !== 4) throw new Error(`Expected 4, got ${store.get('count')}`);
+
+    store.destroy();
+  },
+
+  'derived: multiple dependencies': () => {
+    const store = createEveryState({ a: 10, b: 20 });
+    store.derived('sum', ['a', 'b'], () => store.get('a') + store.get('b'));
+
+    if (store.get('sum') !== 30) throw new Error(`Expected 30, got ${store.get('sum')}`);
+
+    store.set('a', 100);
+    if (store.get('sum') !== 120) throw new Error(`Expected 120, got ${store.get('sum')}`);
+
+    store.set('b', 200);
+    if (store.get('sum') !== 300) throw new Error(`Expected 300, got ${store.get('sum')}`);
+
+    store.destroy();
+  },
+
+  'derived: wildcard dependency': () => {
+    const store = createEveryState({ counters: { a: 1, b: 2 } });
+    store.derived('total', ['counters.*'], () => {
+      const c = store.get('counters');
+      return Object.values(c).reduce((sum, v) => sum + v, 0);
+    });
+
+    if (store.get('total') !== 3) throw new Error(`Expected 3, got ${store.get('total')}`);
+
+    store.set('counters.a', 10);
+    if (store.get('total') !== 12) throw new Error(`Expected 12, got ${store.get('total')}`);
+
+    store.destroy();
+  },
+
+  'derived: set on derived path throws': () => {
+    const store = createEveryState({ x: 5 });
+    store.derived('doubled', ['x'], () => store.get('x') * 2);
+
+    let threw = false;
+    try { store.set('doubled', 999); } catch { threw = true; }
+    if (!threw) throw new Error('set() on derived path should throw');
+    if (store.get('doubled') !== 10) throw new Error('Derived value should be unchanged');
+
+    store.destroy();
+  },
+
+  'derived: unsubscribe allows manual set': () => {
+    const store = createEveryState({ x: 3 });
+    const unsub = store.derived('y', ['x'], () => store.get('x') + 1);
+
+    if (store.get('y') !== 4) throw new Error(`Expected 4, got ${store.get('y')}`);
+
+    unsub();
+    store.set('y', 100); // should NOT throw after unsub
+    if (store.get('y') !== 100) throw new Error(`Expected 100 after manual set`);
+
+    store.set('x', 50);
+    if (store.get('y') !== 100) throw new Error(`Expected 100, dep change should not recompute`);
+
+    store.destroy();
+  },
+
+  'derived: cascading (derived of derived)': () => {
+    const store = createEveryState({ base: 2 });
+    store.derived('x2', ['base'], () => store.get('base') * 2);
+    store.derived('x4', ['x2'], () => store.get('x2') * 2);
+
+    if (store.get('x2') !== 4) throw new Error(`Expected x2=4, got ${store.get('x2')}`);
+    if (store.get('x4') !== 8) throw new Error(`Expected x4=8, got ${store.get('x4')}`);
+
+    store.set('base', 10);
+    if (store.get('x2') !== 20) throw new Error(`Expected x2=20, got ${store.get('x2')}`);
+    if (store.get('x4') !== 40) throw new Error(`Expected x4=40, got ${store.get('x4')}`);
+
+    store.destroy();
+  },
+
+  'derived: recomputes after batch': () => {
+    const store = createEveryState({ a: 1, b: 2 });
+    store.derived('product', ['a', 'b'], () => store.get('a') * store.get('b'));
+
+    if (store.get('product') !== 2) throw new Error(`Expected 2, got ${store.get('product')}`);
+
+    store.batch(() => {
+      store.set('a', 5);
+      store.set('b', 6);
+    });
+
+    if (store.get('product') !== 30) throw new Error(`Expected 30, got ${store.get('product')}`);
+
+    store.destroy();
+  },
+
+  'derived: subscribers on derived path fire': () => {
+    const store = createEveryState({ x: 1 });
+    store.derived('y', ['x'], () => store.get('x') * 10);
+
+    const seen = [];
+    store.subscribe('y', (val) => seen.push(val));
+
+    store.set('x', 2);
+    if (seen.length !== 1 || seen[0] !== 20) {
+      throw new Error(`Expected [20], got [${seen}]`);
+    }
+
+    store.set('x', 3);
+    if (seen.length !== 2 || seen[1] !== 30) {
+      throw new Error(`Expected [20,30], got [${seen}]`);
+    }
+
+    store.destroy();
+  },
+
+  'derived: duplicate path throws': () => {
+    const store = createEveryState({ x: 1 });
+    store.derived('y', ['x'], () => store.get('x'));
+
+    let threw = false;
+    try { store.derived('y', ['x'], () => store.get('x') * 2); } catch { threw = true; }
+    if (!threw) throw new Error('Duplicate derived should throw');
+
+    store.destroy();
+  },
+
+  'derived: validation errors': () => {
+    const store = createEveryState({ x: 1 });
+
+    let t1 = false;
+    try { store.derived('', ['x'], () => 1); } catch { t1 = true; }
+    if (!t1) throw new Error('Empty path should throw');
+
+    let t2 = false;
+    try { store.derived('y', 'x', () => 1); } catch { t2 = true; }
+    if (!t2) throw new Error('Non-array deps should throw');
+
+    let t3 = false;
+    try { store.derived('y', ['x'], 'nope'); } catch { t3 = true; }
+    if (!t3) throw new Error('Non-function fn should throw');
+
+    store.destroy();
+  },
 });
 
 if (results.failed > 0) process.exit(1);

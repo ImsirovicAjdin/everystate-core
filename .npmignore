@@ -36,3 +36,5 @@ _noPublish/
 .DS_Store
 Thumbs.db
 package-lock.json
+
+release-notes

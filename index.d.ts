@@ -73,6 +73,19 @@ export interface EveryStateStore {
   subscribe(path: string, handler: (valueOrDetail: any, detail?: ChangeDetail) => void): Unsubscribe;
 
   /**
+   * Declare a derived (computed) path. The path's value is automatically
+   * recomputed whenever any dependency changes.
+   *
+   * Manual `set()` on a derived path will throw.
+   *
+   * @param path - The derived path (e.g., 'stats.total')
+   * @param deps - Array of dependency paths (supports wildcards)
+   * @param fn - Computation function returning the derived value
+   * @returns Unsubscribe function that removes the derivation
+   */
+  derived(path: string, deps: string[], fn: () => any): Unsubscribe;
+
+  /**
    * Destroy the store, abort all async ops, and clear all subscriptions.
    */
   destroy(): void;

@@ -1,5 +1,5 @@
 /**
- * EveryState v1.0.9 - Optimized Path-Based State Management
+ * EveryState v1.1.0 - Optimized Path-Based State Management
  *
  * A lightweight, performant state management library using path-based subscriptions.
  * Optimized for selective notifications and granular updates.
@@ -51,6 +51,9 @@
  * // Or use setMany for the same effect
  * store.setMany({ 'user.name': 'Charlie', 'user.email': 'charlie@example.com' });
  *
+ * // Derived paths (computed from dependencies)
+ * store.derived('stats.total', ['todos'], () => store.get('todos').length);
+ *
  * // Cleanup
  * unsub();
  * store.destroy();
@@ -65,6 +68,9 @@ export function createEveryState(initial = {}) {
   // Batching: buffer writes and flush once at the end
   let batching = false;
   const batchBuffer = new Map();
+
+  // Derived paths: track which paths are computed, their unsubs, and compute fns
+  const derivedPaths = new Map(); // path -> { unsubs: Function[], compute: Function }
 
   function writeAndNotify(path, value) {
     const parts = path.split(".");
@@ -202,6 +208,9 @@ export function createEveryState(initial = {}) {
     set(path, value) {
       if (destroyed) throw new Error('Cannot set on destroyed store');
       if (!path) return value;
+      if (derivedPaths.has(path)) {
+        throw new Error(`Cannot set derived path "${path}": it is computed from its dependencies`);
+      }
 
       if (batching) {
         batchBuffer.set(path, value);
@@ -338,10 +347,73 @@ export function createEveryState(initial = {}) {
     },
 
     /**
+     * Declare a derived (computed) path. The path's value is automatically
+     * recomputed whenever any dependency changes.
+     *
+     * @param {string} path - The derived path (e.g., 'stats.total')
+     * @param {string[]} deps - Array of dependency paths (supports wildcards)
+     * @param {Function} fn - Computation function; should return the derived value
+     * @returns {Function} Unsubscribe function that removes the derivation
+     *
+     * @example
+     * store.derived('stats.total', ['todos'], () => store.get('todos').length);
+     * store.derived('stats.active', ['todos'], () =>
+     *   store.get('todos').filter(t => !t.done).length
+     * );
+     */
+    derived(path, deps, fn) {
+      if (destroyed) throw new Error('Cannot derive on destroyed store');
+      if (!path || typeof path !== 'string') {
+        throw new TypeError('derived() requires a path string');
+      }
+      if (!Array.isArray(deps)) {
+        throw new TypeError('derived() requires a deps array');
+      }
+      if (typeof fn !== 'function') {
+        throw new TypeError('derived() requires a compute function');
+      }
+      if (derivedPaths.has(path)) {
+        throw new Error(`Path "${path}" is already derived`);
+      }
+
+      const compute = () => {
+        const value = fn();
+        if (batching) {
+          batchBuffer.set(path, value);
+        } else {
+          writeAndNotify(path, value);
+        }
+      };
+
+      // Initial computation
+      compute();
+
+      // Subscribe to each dependency
+      const unsubs = deps.map(dep => this.subscribe(dep, () => compute()));
+
+      derivedPaths.set(path, { unsubs, compute });
+
+      // Return an unsubscribe function
+      return () => {
+        const entry = derivedPaths.get(path);
+        if (entry) {
+          for (const u of entry.unsubs) u();
+          derivedPaths.delete(path);
+        }
+      };
+    },
+
+    /**
      * Destroy store and clear all subscriptions
      */
     destroy() {
       if (!destroyed) {
+        // Clean up all derivations first
+        for (const [, entry] of derivedPaths) {
+          for (const u of entry.unsubs) u();
+        }
+        derivedPaths.clear();
+
         destroyed = true;
         batchBuffer.clear();
         asyncOps.forEach(({ controller }) => controller.abort());

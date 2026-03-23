@@ -347,9 +347,146 @@ let threwKeys = false;
 try { s14.keys(); } catch { threwKeys = true; }
 assert('keys: destroyed throws', threwKeys);
 
+console.log('\n15. derived: basic');
+const s15 = createEveryState({ todos: [1, 2, 3] });
+s15.derived('count', ['todos'], () => s15.get('todos').length);
+assert('derived: initial computation', s15.get('count') === 3);
+
+s15.set('todos', [1, 2, 3, 4]);
+assert('derived: recomputes on dep change', s15.get('count') === 4);
+
+s15.set('todos', []);
+assert('derived: recomputes to zero', s15.get('count') === 0);
+
+s15.destroy();
+
+console.log('\n16. derived: multiple dependencies');
+const s16 = createEveryState({ a: 2, b: 3 });
+s16.derived('sum', ['a', 'b'], () => s16.get('a') + s16.get('b'));
+assert('derived multi: initial', s16.get('sum') === 5);
+
+s16.set('a', 10);
+assert('derived multi: after a change', s16.get('sum') === 13);
+
+s16.set('b', 7);
+assert('derived multi: after b change', s16.get('sum') === 17);
+
+s16.destroy();
+
+console.log('\n17. derived: wildcard dependency');
+const s17 = createEveryState({ items: { x: 1, y: 2 } });
+let s17computeCount = 0;
+s17.derived('itemSum', ['items.*'], () => {
+  s17computeCount++;
+  const obj = s17.get('items');
+  return Object.values(obj).reduce((a, b) => a + b, 0);
+});
+assert('derived wildcard: initial', s17.get('itemSum') === 3);
+const initialComputes = s17computeCount;
+
+s17.set('items.x', 10);
+assert('derived wildcard: recomputes on child change', s17.get('itemSum') === 12);
+assert('derived wildcard: compute fired', s17computeCount > initialComputes);
+
+s17.destroy();
+
+console.log('\n18. derived: set on derived path throws');
+const s18 = createEveryState({ x: 1 });
+s18.derived('doubled', ['x'], () => s18.get('x') * 2);
+assert('derived guard: initial value', s18.get('doubled') === 2);
+
+let threwDerived = false;
+try { s18.set('doubled', 999); } catch { threwDerived = true; }
+assert('derived guard: set throws', threwDerived);
+assert('derived guard: value unchanged', s18.get('doubled') === 2);
+
+s18.destroy();
+
+console.log('\n19. derived: unsubscribe removes derivation');
+const s19 = createEveryState({ x: 5 });
+const unsubDerived = s19.derived('triple', ['x'], () => s19.get('x') * 3);
+assert('derived unsub: initial', s19.get('triple') === 15);
+
+unsubDerived();
+// After unsub, set should no longer throw (path is no longer derived)
+let threwAfterUnsub = false;
+try { s19.set('triple', 999); } catch { threwAfterUnsub = true; }
+assert('derived unsub: set works after removal', !threwAfterUnsub);
+assert('derived unsub: manual set took effect', s19.get('triple') === 999);
+
+// dep change should not recompute
+s19.set('x', 100);
+assert('derived unsub: dep change does not recompute', s19.get('triple') === 999);
+
+s19.destroy();
+
+console.log('\n20. derived: duplicate path throws');
+const s20 = createEveryState({ x: 1 });
+s20.derived('y', ['x'], () => s20.get('x') + 1);
+
+let threwDup = false;
+try { s20.derived('y', ['x'], () => s20.get('x') + 2); } catch { threwDup = true; }
+assert('derived duplicate: throws', threwDup);
+
+s20.destroy();
+
+console.log('\n21. derived: validation');
+const s21 = createEveryState({ x: 1 });
+
+let threwV1 = false;
+try { s21.derived('', ['x'], () => 1); } catch { threwV1 = true; }
+assert('derived validation: empty path throws', threwV1);
+
+let threwV2 = false;
+try { s21.derived('y', 'x', () => 1); } catch { threwV2 = true; }
+assert('derived validation: non-array deps throws', threwV2);
+
+let threwV3 = false;
+try { s21.derived('y', ['x'], 'not a fn'); } catch { threwV3 = true; }
+assert('derived validation: non-function fn throws', threwV3);
+
+s21.destroy();
+
+console.log('\n22. derived: cascading (derived depends on derived)');
+const s22 = createEveryState({ base: 10 });
+s22.derived('doubled', ['base'], () => s22.get('base') * 2);
+s22.derived('quadrupled', ['doubled'], () => s22.get('doubled') * 2);
+
+assert('derived cascade: doubled initial', s22.get('doubled') === 20);
+assert('derived cascade: quadrupled initial', s22.get('quadrupled') === 40);
+
+s22.set('base', 5);
+assert('derived cascade: doubled after change', s22.get('doubled') === 10);
+assert('derived cascade: quadrupled after change', s22.get('quadrupled') === 20);
+
+s22.destroy();
+
+console.log('\n23. derived: works with batch');
+const s23 = createEveryState({ a: 1, b: 2 });
+s23.derived('sum', ['a', 'b'], () => s23.get('a') + s23.get('b'));
+assert('derived batch: initial', s23.get('sum') === 3);
+
+s23.batch(() => {
+  s23.set('a', 10);
+  s23.set('b', 20);
+});
+assert('derived batch: recomputed after batch', s23.get('sum') === 30);
+
+s23.destroy();
+
+console.log('\n24. derived: destroy cleans up');
+const s24 = createEveryState({ x: 1 });
+s24.derived('y', ['x'], () => s24.get('x') + 1);
+assert('derived destroy: before destroy', s24.get('y') === 2);
+
+s24.destroy();
+let threwDestroyed = false;
+try { s24.derived('z', ['x'], () => 1); } catch { threwDestroyed = true; }
+assert('derived destroy: derived throws after destroy', threwDestroyed);
+
 // Results
 
-console.log(`\n@everystate/core v1.0.9 self-test`);
+console.log(`\n@everystate/core v1.1.0 self-test`);
 console.log(`✓ ${passed} assertions passed${failed ? `, ✗ ${failed} failed` : ''}\n`);
 
 if (failed > 0) process.exit(1);
