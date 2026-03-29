@@ -1,4 +1,4 @@
-# @everystate/core v1.0.9
+# @everystate/core v1.2.1
 
 **EveryState: Observable state management with dot-path addressing**
 
