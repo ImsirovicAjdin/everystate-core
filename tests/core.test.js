@@ -384,6 +384,72 @@ const results = runTests({
 
     store.destroy();
   },
+
+  // -- two-pass batch flush (v1.2.0) ------------------------------------
+
+  'batch: two-pass — subscriber on first path reads later paths fresh': () => {
+    const store = createEveryState({ active: false, color: 'gray', label: 'Off' });
+    let readColor = null;
+    let readLabel = null;
+    store.subscribe('active', () => {
+      readColor = store.get('color');
+      readLabel = store.get('label');
+    });
+    store.batch(() => {
+      store.set('active', true);
+      store.set('color', 'blue');
+      store.set('label', 'On');
+    });
+    if (readColor !== 'blue') throw new Error(`Expected color='blue', got '${readColor}'`);
+    if (readLabel !== 'On') throw new Error(`Expected label='On', got '${readLabel}'`);
+    store.destroy();
+  },
+
+  'batch: two-pass — all subscribers see fully consistent state': () => {
+    const store = createEveryState({ a: 0, b: 0, c: 0 });
+    const snapshots = [];
+    store.subscribe('a', () => snapshots.push({ src: 'a', a: store.get('a'), b: store.get('b'), c: store.get('c') }));
+    store.subscribe('b', () => snapshots.push({ src: 'b', a: store.get('a'), b: store.get('b'), c: store.get('c') }));
+    store.subscribe('c', () => snapshots.push({ src: 'c', a: store.get('a'), b: store.get('b'), c: store.get('c') }));
+    store.batch(() => {
+      store.set('a', 1);
+      store.set('b', 2);
+      store.set('c', 3);
+    });
+    for (const snap of snapshots) {
+      if (snap.a !== 1 || snap.b !== 2 || snap.c !== 3) {
+        throw new Error(`Subscriber on '${snap.src}' saw inconsistent state: ${JSON.stringify(snap)}`);
+      }
+    }
+    store.destroy();
+  },
+
+  'batch: two-pass — setMany subscribers see consistent state': () => {
+    const store = createEveryState({ x: 'old', y: 'old' });
+    let yDuringX = null;
+    store.subscribe('x', () => { yDuringX = store.get('y'); });
+    store.setMany({ x: 'new', y: 'new' });
+    if (yDuringX !== 'new') throw new Error(`Expected y='new' during x subscriber, got '${yDuringX}'`);
+    store.destroy();
+  },
+
+  'batch: two-pass — wildcard sees all sibling values fresh': () => {
+    const store = createEveryState({ user: { name: 'Alice', role: 'viewer' } });
+    const snaps = [];
+    store.subscribe('user.*', () => {
+      snaps.push({ name: store.get('user.name'), role: store.get('user.role') });
+    });
+    store.batch(() => {
+      store.set('user.name', 'Bob');
+      store.set('user.role', 'admin');
+    });
+    for (let i = 0; i < snaps.length; i++) {
+      if (snaps[i].name !== 'Bob' || snaps[i].role !== 'admin') {
+        throw new Error(`Wildcard fire #${i} saw inconsistent state: ${JSON.stringify(snaps[i])}`);
+      }
+    }
+    store.destroy();
+  },
 });
 
 if (results.failed > 0) process.exit(1);

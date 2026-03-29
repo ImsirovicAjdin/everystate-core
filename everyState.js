@@ -1,5 +1,5 @@
 /**
- * EveryState v1.1.0 - Optimized Path-Based State Management
+ * EveryState v1.2.0 - Optimized Path-Based State Management
  *
  * A lightweight, performant state management library using path-based subscriptions.
  * Optimized for selective notifications and granular updates.
@@ -72,7 +72,9 @@ export function createEveryState(initial = {}) {
   // Derived paths: track which paths are computed, their unsubs, and compute fns
   const derivedPaths = new Map(); // path -> { unsubs: Function[], compute: Function }
 
-  function writeAndNotify(path, value) {
+  // Write a value to state without firing any listeners.
+  // Returns { path, value, oldValue, parts } for deferred notification.
+  function writeToState(path, value) {
     const parts = path.split(".");
     const key = parts.pop();
     let cur = state;
@@ -84,15 +86,14 @@ export function createEveryState(initial = {}) {
 
     const oldValue = cur[key];
     cur[key] = value;
+    return { path, value, oldValue, parts };
+  }
 
-    // Fast-path: skip all listener dispatch when nobody is subscribed.
-    // This preserves observer-before-observable: the moment any subscriber
-    // registers, listeners.size > 0 and the full dispatch runs.
-    if (destroyed || listeners.size === 0) return value;
+  // Fire listeners for a single write entry.
+  function notifyListeners(entry) {
+    const { path, value, oldValue, parts } = entry;
+    if (destroyed || listeners.size === 0) return;
 
-    // Lazy detail allocation: only build the object when a listener is
-    // actually present.  No closure is created - the inline `||` re-uses
-    // the same object across exact / wildcard / global dispatch.
     let detail = null;
 
     const exactListeners = listeners.get(path);
@@ -118,15 +119,29 @@ export function createEveryState(initial = {}) {
       detail = detail || { path, value, oldValue };
       globalListeners.forEach(cb => cb(detail));
     }
+  }
 
+  // Combined write + notify for non-batch set() calls.
+  function writeAndNotify(path, value) {
+    const entry = writeToState(path, value);
+    notifyListeners(entry);
     return value;
   }
 
+  // Two-pass flush: write ALL values first, THEN fire ALL notifications.
+  // This ensures that when any subscriber callback runs, every path in
+  // the batch has already been written to state — no stale reads.
   function flushBatch() {
     const entries = Array.from(batchBuffer.entries());
     batchBuffer.clear();
+    // Pass 1: write all values to state
+    const written = [];
     for (const [p, v] of entries) {
-      writeAndNotify(p, v);
+      written.push(writeToState(p, v));
+    }
+    // Pass 2: fire all notifications (all values now fresh)
+    for (const entry of written) {
+      notifyListeners(entry);
     }
   }
 

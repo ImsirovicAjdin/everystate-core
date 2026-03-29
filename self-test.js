@@ -484,9 +484,86 @@ let threwDestroyed = false;
 try { s24.derived('z', ['x'], () => 1); } catch { threwDestroyed = true; }
 assert('derived destroy: derived throws after destroy', threwDestroyed);
 
+console.log('\n25. batch: two-pass flush — subscriber reads sibling paths fresh');
+const s25 = createEveryState({ toggle: { active: false }, color: 'gray', label: 'Off' });
+let s25color = null;
+let s25label = null;
+// Subscribe to the FIRST path set in the batch
+s25.subscribe('toggle.active', (val) => {
+  // During this callback, color and label should already be written
+  s25color = s25.get('color');
+  s25label = s25.get('label');
+});
+s25.batch(() => {
+  s25.set('toggle.active', true);
+  s25.set('color', 'blue');
+  s25.set('label', 'On');
+});
+assert('two-pass: subscriber on first path reads fresh color', s25color === 'blue');
+assert('two-pass: subscriber on first path reads fresh label', s25label === 'On');
+assert('two-pass: final state color', s25.get('color') === 'blue');
+assert('two-pass: final state label', s25.get('label') === 'On');
+assert('two-pass: final state toggle.active', s25.get('toggle.active') === true);
+s25.destroy();
+
+console.log('\n26. batch: two-pass flush — multiple subscribers all see consistent state');
+const s26 = createEveryState({ a: 0, b: 0, c: 0 });
+const s26reads = { fromA: {}, fromB: {}, fromC: {} };
+s26.subscribe('a', () => {
+  s26reads.fromA = { a: s26.get('a'), b: s26.get('b'), c: s26.get('c') };
+});
+s26.subscribe('b', () => {
+  s26reads.fromB = { a: s26.get('a'), b: s26.get('b'), c: s26.get('c') };
+});
+s26.subscribe('c', () => {
+  s26reads.fromC = { a: s26.get('a'), b: s26.get('b'), c: s26.get('c') };
+});
+s26.batch(() => {
+  s26.set('a', 1);
+  s26.set('b', 2);
+  s26.set('c', 3);
+});
+assert('consistent: subscriber on a sees b=2', s26reads.fromA.b === 2);
+assert('consistent: subscriber on a sees c=3', s26reads.fromA.c === 3);
+assert('consistent: subscriber on b sees a=1', s26reads.fromB.a === 1);
+assert('consistent: subscriber on b sees c=3', s26reads.fromB.c === 3);
+assert('consistent: subscriber on c sees a=1', s26reads.fromC.a === 1);
+assert('consistent: subscriber on c sees b=2', s26reads.fromC.b === 2);
+s26.destroy();
+
+console.log('\n27. batch: two-pass flush — setMany also consistent');
+const s27 = createEveryState({ x: 'old', y: 'old' });
+let s27yDuringX = null;
+s27.subscribe('x', () => {
+  s27yDuringX = s27.get('y');
+});
+s27.setMany({ x: 'new', y: 'new' });
+assert('setMany consistent: y is fresh when x subscriber fires', s27yDuringX === 'new');
+s27.destroy();
+
+console.log('\n28. batch: two-pass flush — wildcard subscriber sees all fresh values');
+const s28 = createEveryState({ user: { name: 'Alice', role: 'viewer' } });
+const s28snapshots = [];
+s28.subscribe('user.*', () => {
+  s28snapshots.push({
+    name: s28.get('user.name'),
+    role: s28.get('user.role'),
+  });
+});
+s28.batch(() => {
+  s28.set('user.name', 'Bob');
+  s28.set('user.role', 'admin');
+});
+// Both wildcard fires should see {Bob, admin} — never {Bob, viewer}
+assert('wildcard consistent: first fire sees fresh name', s28snapshots[0]?.name === 'Bob');
+assert('wildcard consistent: first fire sees fresh role', s28snapshots[0]?.role === 'admin');
+assert('wildcard consistent: second fire sees fresh name', s28snapshots[1]?.name === 'Bob');
+assert('wildcard consistent: second fire sees fresh role', s28snapshots[1]?.role === 'admin');
+s28.destroy();
+
 // Results
 
-console.log(`\n@everystate/core v1.1.0 self-test`);
+console.log(`\n@everystate/core v1.2.0 self-test`);
 console.log(`✓ ${passed} assertions passed${failed ? `, ✗ ${failed} failed` : ''}\n`);
 
 if (failed > 0) process.exit(1);
